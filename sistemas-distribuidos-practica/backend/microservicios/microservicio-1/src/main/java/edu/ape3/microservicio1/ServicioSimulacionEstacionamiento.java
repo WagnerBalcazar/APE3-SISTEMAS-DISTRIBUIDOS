@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -16,6 +18,62 @@ import org.springframework.stereotype.Service;
 @Service
 public class ServicioSimulacionEstacionamiento {
     private static final long TIEMPO_ESTACIONAMIENTO_MILLIS = 200;
+    private static final int CAPACIDAD_ESTACIONAMIENTO = 4;
+    private final Semaphore semaforoInteractivo = new Semaphore(CAPACIDAD_ESTACIONAMIENTO, true);
+    private final Set<Integer> vehiculosDentroInteractivos = new TreeSet<>();
+    private final Set<Integer> vehiculosEsperandoInteractivos = new TreeSet<>();
+
+    public synchronized EstadoEstacionamiento estadoEstacionamiento() {
+        return crearEstado("Estado actual del estacionamiento", true);
+    }
+
+    public synchronized EstadoEstacionamiento llegarVehiculo(int id) {
+        if (vehiculosDentroInteractivos.contains(id)) {
+            return crearEstado("El vehiculo " + id + " ya esta dentro", true);
+        }
+        if (vehiculosEsperandoInteractivos.contains(id)) {
+            return crearEstado("El vehiculo " + id + " ya esta esperando", false);
+        }
+        if (semaforoInteractivo.tryAcquire()) {
+            vehiculosDentroInteractivos.add(id);
+            return crearEstado("El vehiculo " + id + " ingreso al estacionamiento", true);
+        }
+        vehiculosEsperandoInteractivos.add(id);
+        return crearEstado("El vehiculo " + id + " quedo esperando por falta de espacio", false);
+    }
+
+    public synchronized EstadoEstacionamiento salirVehiculo(int id) {
+        if (!vehiculosDentroInteractivos.remove(id)) {
+            return crearEstado("El vehiculo " + id + " no esta dentro del estacionamiento", false);
+        }
+        semaforoInteractivo.release();
+        if (!vehiculosEsperandoInteractivos.isEmpty()) {
+            int siguiente = vehiculosEsperandoInteractivos.iterator().next();
+            vehiculosEsperandoInteractivos.remove(siguiente);
+            semaforoInteractivo.acquireUninterruptibly();
+            vehiculosDentroInteractivos.add(siguiente);
+        }
+        return crearEstado("El vehiculo " + id + " salio y libero un espacio", true);
+    }
+
+    public synchronized EstadoEstacionamiento reiniciarEstacionamiento() {
+        vehiculosDentroInteractivos.clear();
+        vehiculosEsperandoInteractivos.clear();
+        semaforoInteractivo.drainPermits();
+        semaforoInteractivo.release(CAPACIDAD_ESTACIONAMIENTO);
+        return crearEstado("Estacionamiento reiniciado", true);
+    }
+
+    private EstadoEstacionamiento crearEstado(String mensaje, boolean operacionExitosa) {
+        return new EstadoEstacionamiento(
+                CAPACIDAD_ESTACIONAMIENTO,
+                vehiculosDentroInteractivos.size(),
+                semaforoInteractivo.availablePermits(),
+                List.copyOf(vehiculosDentroInteractivos),
+                List.copyOf(vehiculosEsperandoInteractivos),
+                mensaje,
+                operacionExitosa);
+    }
 
     // Service Layer: encapsula la coordinacion y evita que el controlador conozca los hilos.
     public ResultadoSimulacion simular(int capacidad, int cantidadVehiculos) {
@@ -105,4 +163,13 @@ public class ServicioSimulacionEstacionamiento {
             List<ResultadoVehiculo> vehiculos,
             List<String> eventos,
             Map<String, String> analisis) { }
+
+    public record EstadoEstacionamiento(
+            int capacidad,
+            int espaciosOcupados,
+            int espaciosDisponibles,
+            List<Integer> vehiculosDentro,
+            List<Integer> vehiculosEsperando,
+            String mensaje,
+            boolean operacionExitosa) { }
 }
