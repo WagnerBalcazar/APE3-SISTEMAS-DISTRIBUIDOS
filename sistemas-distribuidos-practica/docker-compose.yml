@@ -30,45 +30,25 @@ services:
   microservicio-1:
     build:
       context: .
-      dockerfile: backend/microservicio-template/Dockerfile
-    environment:
-      SERVER_PORT: 3001
-      SERVICE_NUMBER: 1
-      SERVICE_EXERCISE: Comunicación entre procesos
+      dockerfile: backend/microservicios/microservicio-1/Dockerfile
     expose: ["3001"]
   microservicio-2:
     build:
       context: .
-      dockerfile: backend/microservicio-template/Dockerfile
-    environment:
-      SERVER_PORT: 3002
-      SERVICE_NUMBER: 2
-      SERVICE_EXERCISE: Sincronización y coordinación
+      dockerfile: backend/microservicios/microservicio-2/Dockerfile
     expose: ["3002"]
   microservicio-3:
     build:
       context: .
-      dockerfile: backend/microservicio-template/Dockerfile
-    environment:
-      SERVER_PORT: 3003
-      SERVICE_NUMBER: 3
-      SERVICE_EXERCISE: Tolerancia a fallos
+      dockerfile: backend/microservicios/microservicio-3/Dockerfile
     expose: ["3003"]
   microservicio-4:
     build:
       context: .
-      dockerfile: backend/microservicio-template/Dockerfile
-    environment:
-      SERVER_PORT: 3004
-      SERVICE_NUMBER: 4
-      SERVICE_EXERCISE: Consistencia de datos
+      dockerfile: backend/microservicios/microservicio-4/Dockerfile
     expose: ["3004"]
   microservicio-5:
     build:
       context: .
-      dockerfile: backend/microservicio-template/Dockerfile
-    environment:
-      SERVER_PORT: 3005
-      SERVICE_NUMBER: 5
-      SERVICE_EXERCISE: Caso integrador
+      dockerfile: backend/microservicios/microservicio-5/Dockerfile
     expose: ["3005"]

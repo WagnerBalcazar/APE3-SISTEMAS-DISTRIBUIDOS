@@ -1,25 +1,33 @@
 # Backend
 
-El backend está compuesto por un API Gateway y cinco instancias independientes de una aplicación Spring Boot.
+El backend está compuesto por un API Gateway y cinco proyectos Spring Boot independientes.
 
 ## Componentes
 
 - `gateway`: entrada única de la API en el puerto `3000`.
-- `microservicio-template`: aplicación base configurable para los servicios `1` a `5`.
+- `microservicios/microservicio-1`: comunicación entre procesos.
+- `microservicios/microservicio-2`: sincronización y coordinación.
+- `microservicios/microservicio-3`: tolerancia a fallos.
+- `microservicios/microservicio-4`: consistencia de datos.
+- `microservicios/microservicio-5`: caso integrador.
 
-Cada instancia recibe `SERVER_PORT`, `SERVICE_NUMBER` y `SERVICE_EXERCISE` mediante Docker Compose. Aunque comparten código base, se ejecutan como procesos y contenedores separados.
+Cada proyecto tiene su propio `pom.xml`, código fuente, puerto y Dockerfile. Se ejecutan como procesos y contenedores separados.
 
 ## Compilar
 
 ```bash
 mvn -f gateway/pom.xml clean package
-mvn -f microservicio-template/pom.xml clean package
+mvn -f microservicios/microservicio-1/pom.xml clean package
+mvn -f microservicios/microservicio-2/pom.xml clean package
+mvn -f microservicios/microservicio-3/pom.xml clean package
+mvn -f microservicios/microservicio-4/pom.xml clean package
+mvn -f microservicios/microservicio-5/pom.xml clean package
 ```
 
 ## Ejecutar
 
 ```bash
-java -jar microservicio-template/target/microservicio-template-1.0.0.jar --server.port=3001 --service.number=1
+java -jar microservicios/microservicio-1/target/microservicio-1-1.0.0.jar
 java -jar gateway/target/gateway-1.0.0.jar
 ```
 
