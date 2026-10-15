@@ -1,35 +1,49 @@
 # APE 3 - Sistemas Distribuidos
 
-Monorepo académico con un frontend React, un API Gateway y cinco microservicios.
+Monorepo académico con un frontend React, un API Gateway y cinco microservicios Spring Boot.
 
 ## Estructura
 
 ```text
 frontend/                 Plantilla React de la práctica
-gateway/                  Punto único de entrada de la API
-microservicios/           Cinco servicios independientes
-shared/                   Código común mínimo de los servicios
+backend/gateway/          API Gateway Spring Boot
+backend/microservicio-template/  Aplicación base para los cinco servicios
+microservicios/           Documentación de los servicios
 docker-compose.yml        Orquestación de todo el sistema
 ```
 
+## Tecnologías
+
+- Frontend: React, Vite y Node.js.
+- Backend: Java 17, Spring Boot 3.4 y Spring Web.
+- Infraestructura: Docker Compose.
+
 ## Ejecutar en Visual Studio Code
 
-1. Instala Node.js LTS desde https://nodejs.org si todavía no está instalado.
+1. Instala Java 17, Maven y Node.js LTS.
 2. Abre esta carpeta en Visual Studio Code.
-3. Abre una terminal con **Terminal > New Terminal**.
+3. Compila el backend:
+
+```bash
+mvn -f backend/gateway/pom.xml package
+mvn -f backend/microservicio-template/pom.xml package
+```
+
 4. Instala las dependencias del frontend y ejecútalo:
 
 ```bash
 npm --prefix frontend install
-npm run dev:frontend
+npm --prefix frontend run dev
 ```
 
-5. En otra terminal ejecuta el Gateway y los microservicios:
+5. En otras terminales ejecuta el gateway y los servicios Spring Boot:
 
 ```bash
-npm run start:services
-npm run start:gateway
+java -jar backend/microservicio-template/target/microservicio-template-1.0.0.jar --server.port=3001 --service.number=1
+java -jar backend/gateway/target/gateway-1.0.0.jar
 ```
+
+Para levantar los cinco servicios con sus valores completos se recomienda Docker Compose.
 
 6. Abre `http://localhost:5173`. El Gateway queda disponible en `http://localhost:3000`.
 
@@ -60,3 +74,9 @@ El frontend estará en `http://localhost:5173`.
 Edita `frontend/src/data.js` para reemplazar los textos `TODO` por el contenido real de la práctica.
 
 Las respuestas del estudiante se guardan automáticamente en `localStorage`. El botón **Imprimir / PDF** permite imprimir la pestaña actual o guardarla como PDF desde el diálogo del navegador.
+
+El backend está implementado con Java 17, Spring Boot 3.4 y Spring Web. El gateway publica los microservicios mediante `/api/microservicio-N`.
+
+## Estado del repositorio
+
+No se deben subir `node_modules`, `dist`, `target` ni archivos `.env`. Estas rutas ya están excluidas mediante `.gitignore`.

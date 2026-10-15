@@ -3,11 +3,15 @@ services:
     build: ./frontend
     ports:
       - "5173:5173"
+    environment:
+      VITE_API_TARGET: http://gateway:3000
     depends_on:
       - gateway
 
   gateway:
-    build: ./gateway
+    build:
+      context: .
+      dockerfile: backend/gateway/Dockerfile
     ports:
       - "3000:3000"
     environment:
@@ -26,25 +30,45 @@ services:
   microservicio-1:
     build:
       context: .
-      dockerfile: microservicios/microservicio-1/Dockerfile
+      dockerfile: backend/microservicio-template/Dockerfile
+    environment:
+      SERVER_PORT: 3001
+      SERVICE_NUMBER: 1
+      SERVICE_EXERCISE: Comunicación entre procesos
     expose: ["3001"]
   microservicio-2:
     build:
       context: .
-      dockerfile: microservicios/microservicio-2/Dockerfile
+      dockerfile: backend/microservicio-template/Dockerfile
+    environment:
+      SERVER_PORT: 3002
+      SERVICE_NUMBER: 2
+      SERVICE_EXERCISE: Sincronización y coordinación
     expose: ["3002"]
   microservicio-3:
     build:
       context: .
-      dockerfile: microservicios/microservicio-3/Dockerfile
+      dockerfile: backend/microservicio-template/Dockerfile
+    environment:
+      SERVER_PORT: 3003
+      SERVICE_NUMBER: 3
+      SERVICE_EXERCISE: Tolerancia a fallos
     expose: ["3003"]
   microservicio-4:
     build:
       context: .
-      dockerfile: microservicios/microservicio-4/Dockerfile
+      dockerfile: backend/microservicio-template/Dockerfile
+    environment:
+      SERVER_PORT: 3004
+      SERVICE_NUMBER: 4
+      SERVICE_EXERCISE: Consistencia de datos
     expose: ["3004"]
   microservicio-5:
     build:
       context: .
-      dockerfile: microservicios/microservicio-5/Dockerfile
+      dockerfile: backend/microservicio-template/Dockerfile
+    environment:
+      SERVER_PORT: 3005
+      SERVICE_NUMBER: 5
+      SERVICE_EXERCISE: Caso integrador
     expose: ["3005"]
