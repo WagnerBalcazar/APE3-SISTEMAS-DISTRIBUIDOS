@@ -2,3 +2,5 @@
 .layout{grid-template-columns:220px minmax(0,1fr);gap:28px}.sidebar{justify-self:start;width:220px}
 .layout{grid-template-columns:220px minmax(0,1fr) 260px;grid-template-areas:"nav progress services" "nav connection services" "nav simulation services";gap:22px;align-items:start}.layout main{display:contents}.sidebar{grid-area:nav;justify-self:start;width:220px}.progress-card{grid-area:progress}.service-card{grid-area:connection}.simulation-card{grid-area:simulation}@media(max-width:1000px){.layout{display:grid;grid-template-columns:220px minmax(0,1fr);grid-template-areas:none}.layout main{display:block}.sidebar,.progress-card,.service-card,.simulation-card{grid-area:auto}}
 .layout{width:min(1320px,calc(100% - 16px));grid-template-columns:190px minmax(0,1fr) 210px;gap:16px}.sidebar{width:190px;padding:10px}.tab{padding:10px 11px;font-size:.9rem}
+.layout{grid-template-areas:"nav progress services" "nav simulation services"}.service-card{display:none}
+.layout{grid-template-areas:"nav progress services" "nav simulation services"}@media(max-width:1000px){.layout{grid-template-areas:none}}
