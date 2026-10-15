@@ -2,6 +2,13 @@ import { useEffect, useMemo, useState } from 'react'
 import { controlQuestions, emptyState, evaluationRows, exercises } from './data'
 
 const storageKey = 'sistemas-distribuidos-practica'
+const serviceNames = {
+  1: 'Control de acceso al estacionamiento',
+  2: 'Sincronizacion y coordinacion',
+  3: 'Tolerancia a fallos',
+  4: 'Consistencia de datos',
+  5: 'Caso integrador',
+}
 
 function Field({ label, value, onChange, type = 'text' }) {
   return <label className="field"><span>{label}</span><input type={type} value={value} onChange={e => onChange(e.target.value)} /></label>
@@ -49,7 +56,7 @@ export default function App() {
     try { return JSON.parse(localStorage.getItem(storageKey)) || emptyState } catch { return emptyState }
   })
   const [saved, setSaved] = useState(false)
-  const [serviceStatus, setServiceStatus] = useState(null)
+  const [serviceHealth, setServiceHealth] = useState({})
   const [parkingSimulation, setParkingSimulation] = useState(null)
 
   useEffect(() => {
@@ -59,9 +66,8 @@ export default function App() {
     return () => clearTimeout(timer)
   }, [data])
 
-  useEffect(() => {
-    fetch('/api/services').then(response => response.json()).then(setServiceStatus).catch(() => setServiceStatus(null))
-  }, [])
+  const checkService = number => fetch(`/api/microservicio-${number}/health`).then(response => response.ok ? response.json() : Promise.reject()).then(result => setServiceHealth(current => ({ ...current, [number]: result }))).catch(() => setServiceHealth(current => ({ ...current, [number]: null })))
+  useEffect(() => { [1, 2, 3, 4, 5].forEach(checkService) }, [])
 
   const loadParkingSimulation = () => fetch('/api/microservicio-1').then(response => response.json()).then(setParkingSimulation).catch(() => setParkingSimulation(null))
   useEffect(() => { loadParkingSimulation() }, [])
@@ -72,16 +78,16 @@ export default function App() {
   const updateControl = (index, value) => setData(current => ({ ...current, control: current.control.map((answer, i) => i === index ? value : answer) }))
 
   const progress = useMemo(() => {
-    const values = [data.title, data.subject, data.cycle, data.unit, data.members, data.date, ...data.exercises.flatMap(e => [e.code, ...e.answers, e.evidence]), ...data.control, data.bibliography, data.annexes]
+    const values = [...data.exercises.flatMap(e => [e.code, ...e.answers, e.evidence]), ...data.control, data.bibliography, data.annexes]
     return Math.round(values.filter(value => value.trim()).length / values.length * 100)
   }, [data])
 
   return <>
-    <header className="hero"><div className="hero-content"><div><span className="eyebrow">Plantilla académica editable</span><h1>{data.title || 'Trabajo práctico'}</h1><p>Documenta ejercicios, análisis, evidencias y evaluación en un solo lugar.</p></div><div className="actions"><button className="button light" onClick={() => window.print()}>Imprimir / PDF</button><button className="button subtle" onClick={() => { if (window.confirm('¿Limpiar todas las respuestas?')) setData(emptyState) }}>Limpiar</button></div></div></header>
+     <header className="hero"><div className="hero-content"><div><span className="eyebrow">Panel de demostracion</span><h1>Sistema distribuido</h1><p>Frontend React conectado a un API Gateway y cinco microservicios Spring Boot.</p></div><div className="actions"><button className="button light" onClick={() => window.print()}>Imprimir / PDF</button><button className="button subtle" onClick={() => { if (window.confirm('¿Limpiar todas las respuestas?')) setData(emptyState) }}>Limpiar respuestas</button></div></div></header>
     <div className="container layout"><nav className="sidebar">{exercises.map((exercise, index) => <button key={exercise.title} className={`tab ${activeTab === `exercise-${index}` ? 'active' : ''}`} onClick={() => setActiveTab(`exercise-${index}`)}>Ejercicio {index + 1}</button>)}<button className={`tab ${activeTab === 'control' ? 'active' : ''}`} onClick={() => setActiveTab('control')}>Preguntas de control</button><button className={`tab ${activeTab === 'evaluation' ? 'active' : ''}`} onClick={() => setActiveTab('evaluation')}>Evaluación</button></nav>
       <main><div className="progress-card"><div><strong>Progreso de la práctica</strong><small className="save-status">{saved ? 'Guardado automáticamente' : 'Los cambios se guardan solos'}</small></div><div className="progress-bar"><div style={{ width: `${progress}%` }} /></div><strong>{progress}%</strong></div>
-        <section className="card"><h2>Datos de la práctica</h2><div className="meta-grid"><Field label="Título" value={data.title} onChange={v => updateField('title', v)} /><Field label="Asignatura" value={data.subject} onChange={v => updateField('subject', v)} /><Field label="Ciclo" value={data.cycle} onChange={v => updateField('cycle', v)} /><Field label="Unidad" value={data.unit} onChange={v => updateField('unit', v)} /><Field label="Integrantes" value={data.members} onChange={v => updateField('members', v)} /><Field label="Fecha" type="date" value={data.date} onChange={v => updateField('date', v)} /></div></section>
-         <section className="card service-card"><div><span className="eyebrow">Integración</span><h2>Conexión con microservicios</h2><p>El frontend se comunica con el Gateway mediante rutas como <code>/api/microservicio-1</code>.</p></div><div className="service-list">{[1, 2, 3, 4, 5].map(number => <span className={serviceStatus?.services?.[number] ? 'service-pill online' : 'service-pill'} key={number}>MS {number}</span>)}</div></section>
+         <section className="card service-card"><div><span className="eyebrow">Arquitectura en funcionamiento</span><h2>Servicios disponibles</h2><p>React consulta al Gateway y el Gateway dirige cada solicitud al microservicio correspondiente.</p></div><div className="service-list">{[1, 2, 3, 4, 5].map(number => <span className={serviceHealth[number] ? 'service-pill online' : 'service-pill'} key={number}>MS {number} {serviceHealth[number] ? 'OK' : '...'}</span>)}</div></section>
+         <section className="service-dashboard">{[1, 2, 3, 4, 5].map(number => <article className={`service-tile ${serviceHealth[number] ? 'ready' : ''}`} key={number}><div className="service-tile-top"><span className="service-number">0{number}</span><span className={serviceHealth[number] ? 'status-dot online' : 'status-dot'} /></div><h3>Microservicio {number}</h3><p>{serviceNames[number]}</p><button className="button outline" onClick={() => checkService(number)}>Probar servicio</button></article>)}</section>
          {activeTab === 'exercise-0' && <section className="card simulation-card"><div className="simulation-heading"><div><span className="eyebrow">Ejecución en vivo</span><h2>Estacionamiento con semáforo contador</h2><p>Resultado obtenido desde el microservicio 1 a través del Gateway.</p></div><button className="button primary" onClick={loadParkingSimulation}>Ejecutar simulación</button></div>{parkingSimulation ? <div className="simulation-grid"><div><strong>{parkingSimulation.capacidad}</strong><span>Espacios disponibles</span></div><div><strong>{parkingSimulation.totalVehiculos}</strong><span>Vehículos creados</span></div><div><strong>{parkingSimulation.maximoVehiculosDentro}</strong><span>Máximo dentro</span></div><div><strong>{parkingSimulation.vehiculosQueEsperaron}</strong><span>Vehículos que esperaron</span></div><div><strong>{parkingSimulation.permisosDisponiblesAlFinal}</strong><span>Permisos al final</span></div></div> : <p className="simulation-empty">Conecta el Gateway para ejecutar la simulación.</p>}</section>}
         {activeTab.startsWith('exercise-') && <Exercise index={Number(activeTab.split('-')[1])} response={data.exercises[Number(activeTab.split('-')[1])]} updateExercise={updateExercise} updateAnswer={updateAnswer} />}
         {activeTab === 'control' && <Control answers={data.control} updateControl={updateControl} />}
