@@ -1,0 +1,11 @@
+{
+  "name": "ape-3-sistemas-distribuidos",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "start:gateway": "node gateway/src/server.js",
+    "start:services": "node scripts/start-services.js"
+  }
+}
