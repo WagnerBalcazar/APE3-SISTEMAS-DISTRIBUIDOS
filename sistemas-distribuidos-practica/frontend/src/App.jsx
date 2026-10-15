@@ -50,6 +50,7 @@ export default function App() {
   })
   const [saved, setSaved] = useState(false)
   const [serviceStatus, setServiceStatus] = useState(null)
+  const [parkingSimulation, setParkingSimulation] = useState(null)
 
   useEffect(() => {
     localStorage.setItem(storageKey, JSON.stringify(data))
@@ -61,6 +62,9 @@ export default function App() {
   useEffect(() => {
     fetch('/api/services').then(response => response.json()).then(setServiceStatus).catch(() => setServiceStatus(null))
   }, [])
+
+  const loadParkingSimulation = () => fetch('/api/microservicio-1').then(response => response.json()).then(setParkingSimulation).catch(() => setParkingSimulation(null))
+  useEffect(() => { loadParkingSimulation() }, [])
 
   const updateField = (field, value) => setData(current => ({ ...current, [field]: value }))
   const updateExercise = (index, field, value) => setData(current => ({ ...current, exercises: current.exercises.map((item, i) => i === index ? { ...item, [field]: value } : item) }))
@@ -77,7 +81,8 @@ export default function App() {
     <div className="container layout"><nav className="sidebar">{exercises.map((exercise, index) => <button key={exercise.title} className={`tab ${activeTab === `exercise-${index}` ? 'active' : ''}`} onClick={() => setActiveTab(`exercise-${index}`)}>Ejercicio {index + 1}</button>)}<button className={`tab ${activeTab === 'control' ? 'active' : ''}`} onClick={() => setActiveTab('control')}>Preguntas de control</button><button className={`tab ${activeTab === 'evaluation' ? 'active' : ''}`} onClick={() => setActiveTab('evaluation')}>Evaluación</button></nav>
       <main><div className="progress-card"><div><strong>Progreso de la práctica</strong><small className="save-status">{saved ? 'Guardado automáticamente' : 'Los cambios se guardan solos'}</small></div><div className="progress-bar"><div style={{ width: `${progress}%` }} /></div><strong>{progress}%</strong></div>
         <section className="card"><h2>Datos de la práctica</h2><div className="meta-grid"><Field label="Título" value={data.title} onChange={v => updateField('title', v)} /><Field label="Asignatura" value={data.subject} onChange={v => updateField('subject', v)} /><Field label="Ciclo" value={data.cycle} onChange={v => updateField('cycle', v)} /><Field label="Unidad" value={data.unit} onChange={v => updateField('unit', v)} /><Field label="Integrantes" value={data.members} onChange={v => updateField('members', v)} /><Field label="Fecha" type="date" value={data.date} onChange={v => updateField('date', v)} /></div></section>
-        <section className="card service-card"><div><span className="eyebrow">Integración</span><h2>Conexión con microservicios</h2><p>El frontend se comunica con el Gateway mediante rutas como <code>/api/microservicio-1</code>.</p></div><div className="service-list">{[1, 2, 3, 4, 5].map(number => <span className={serviceStatus?.services?.[number] ? 'service-pill online' : 'service-pill'} key={number}>MS {number}</span>)}</div></section>
+         <section className="card service-card"><div><span className="eyebrow">Integración</span><h2>Conexión con microservicios</h2><p>El frontend se comunica con el Gateway mediante rutas como <code>/api/microservicio-1</code>.</p></div><div className="service-list">{[1, 2, 3, 4, 5].map(number => <span className={serviceStatus?.services?.[number] ? 'service-pill online' : 'service-pill'} key={number}>MS {number}</span>)}</div></section>
+         {activeTab === 'exercise-0' && <section className="card simulation-card"><div className="simulation-heading"><div><span className="eyebrow">Ejecución en vivo</span><h2>Estacionamiento con semáforo contador</h2><p>Resultado obtenido desde el microservicio 1 a través del Gateway.</p></div><button className="button primary" onClick={loadParkingSimulation}>Ejecutar simulación</button></div>{parkingSimulation ? <div className="simulation-grid"><div><strong>{parkingSimulation.capacidad}</strong><span>Espacios disponibles</span></div><div><strong>{parkingSimulation.totalVehiculos}</strong><span>Vehículos creados</span></div><div><strong>{parkingSimulation.maximoVehiculosDentro}</strong><span>Máximo dentro</span></div><div><strong>{parkingSimulation.vehiculosQueEsperaron}</strong><span>Vehículos que esperaron</span></div><div><strong>{parkingSimulation.permisosDisponiblesAlFinal}</strong><span>Permisos al final</span></div></div> : <p className="simulation-empty">Conecta el Gateway para ejecutar la simulación.</p>}</section>}
         {activeTab.startsWith('exercise-') && <Exercise index={Number(activeTab.split('-')[1])} response={data.exercises[Number(activeTab.split('-')[1])]} updateExercise={updateExercise} updateAnswer={updateAnswer} />}
         {activeTab === 'control' && <Control answers={data.control} updateControl={updateControl} />}
         {activeTab === 'evaluation' && <Evaluation data={data} updateField={updateField} />}
