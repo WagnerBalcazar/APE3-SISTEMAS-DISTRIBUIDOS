@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @CrossOrigin(origins = "*")
-public class ParkingSimulationController {
-    private final ParkingSimulationService simulationService;
+public class ControladorEstacionamiento {
+    private final ServicioSimulacionEstacionamiento servicioSimulacion;
 
-    public ParkingSimulationController(ParkingSimulationService simulationService) {
-        this.simulationService = simulationService;
+    public ControladorEstacionamiento(ServicioSimulacionEstacionamiento servicioSimulacion) {
+        this.servicioSimulacion = servicioSimulacion;
     }
 
     @GetMapping("/health")
@@ -24,7 +24,7 @@ public class ParkingSimulationController {
     }
 
     @GetMapping({"/api", "/api/simular"})
-    public ResponseEntity<ParkingSimulationService.SimulationResult> simulate() {
-        return ResponseEntity.ok(simulationService.simulate(4, 10));
+    public ResponseEntity<ServicioSimulacionEstacionamiento.ResultadoSimulacion> simular() {
+        return ResponseEntity.ok(servicioSimulacion.simular(4, 10));
     }
 }

@@ -14,25 +14,25 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ParkingSimulationService {
+public class ServicioSimulacionEstacionamiento {
     private static final long TIEMPO_ESTACIONAMIENTO_MILLIS = 200;
 
     // Service Layer: encapsula la coordinacion y evita que el controlador conozca los hilos.
-    public SimulationResult simulate(int capacidad, int cantidadVehiculos) {
+    public ResultadoSimulacion simular(int capacidad, int cantidadVehiculos) {
         Semaphore espacios = new Semaphore(capacidad, true);
         AtomicInteger vehiculosDentro = new AtomicInteger();
         AtomicInteger maximoDentro = new AtomicInteger();
         List<String> eventos = Collections.synchronizedList(new ArrayList<>());
         ExecutorService ejecutor = Executors.newFixedThreadPool(cantidadVehiculos);
-        List<Future<VehicleResult>> futuros = new ArrayList<>();
+        List<Future<ResultadoVehiculo>> futuros = new ArrayList<>();
 
         for (int id = 1; id <= cantidadVehiculos; id++) {
-            futuros.add(ejecutor.submit(new VehicleTask(
+            futuros.add(ejecutor.submit(new TareaVehiculo(
                     id, espacios, vehiculosDentro, maximoDentro, eventos)));
         }
 
-        List<VehicleResult> vehiculos = new ArrayList<>();
-        for (Future<VehicleResult> futuro : futuros) {
+        List<ResultadoVehiculo> vehiculos = new ArrayList<>();
+        for (Future<ResultadoVehiculo> futuro : futuros) {
             try {
                 vehiculos.add(futuro.get());
             } catch (InterruptedException exception) {
@@ -44,7 +44,7 @@ public class ParkingSimulationService {
         }
         ejecutor.shutdown();
 
-        return new SimulationResult(
+        return new ResultadoSimulacion(
                 capacidad,
                 cantidadVehiculos,
                 maximoDentro.get(),
@@ -57,14 +57,14 @@ public class ParkingSimulationService {
                         "semaphoreInitializedWithTen", "Los diez vehiculos pueden ingresar, superando la capacidad del estacionamiento."));
     }
 
-    private static final class VehicleTask implements Callable<VehicleResult> {
+    private static final class TareaVehiculo implements Callable<ResultadoVehiculo> {
         private final int id;
         private final Semaphore espacios;
         private final AtomicInteger vehiculosDentro;
         private final AtomicInteger maximoDentro;
         private final List<String> eventos;
 
-        private VehicleTask(int id, Semaphore espacios, AtomicInteger vehiculosDentro,
+        private TareaVehiculo(int id, Semaphore espacios, AtomicInteger vehiculosDentro,
                             AtomicInteger maximoDentro, List<String> eventos) {
             this.id = id;
             this.espacios = espacios;
@@ -74,7 +74,7 @@ public class ParkingSimulationService {
         }
 
         @Override
-        public VehicleResult call() throws InterruptedException {
+        public ResultadoVehiculo call() throws InterruptedException {
             eventos.add("Vehiculo " + id + " llega y solicita un espacio");
             long inicioEspera = System.nanoTime();
             espacios.acquire();
@@ -85,7 +85,7 @@ public class ParkingSimulationService {
 
             try {
                 Thread.sleep(TIEMPO_ESTACIONAMIENTO_MILLIS);
-                return new VehicleResult(id, milisegundosEsperados, true);
+                return new ResultadoVehiculo(id, milisegundosEsperados, true);
             } finally {
                 int restantes = vehiculosDentro.decrementAndGet();
                 espacios.release();
@@ -94,15 +94,15 @@ public class ParkingSimulationService {
         }
     }
 
-    public record VehicleResult(int id, long milisegundosEsperados, boolean completado) { }
+    public record ResultadoVehiculo(int id, long milisegundosEsperados, boolean completado) { }
 
-    public record SimulationResult(
+    public record ResultadoSimulacion(
             int capacidad,
             int totalVehiculos,
             int maximoVehiculosDentro,
             int vehiculosQueEsperaron,
             int permisosDisponiblesAlFinal,
-            List<VehicleResult> vehiculos,
+            List<ResultadoVehiculo> vehiculos,
             List<String> eventos,
             Map<String, String> analisis) { }
 }
