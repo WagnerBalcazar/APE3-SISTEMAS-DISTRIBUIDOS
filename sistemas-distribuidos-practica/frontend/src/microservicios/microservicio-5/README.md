@@ -1,5 +1,10 @@
 # Microservicio 5
 
-Esta carpeta está reservada para la interfaz del caso integrador.
+Interfaz del caso integrador: **Centro de impresión (sincronización de procesos)**.
 
-El componente que se agregue aquí debe reutilizar las clases visuales existentes y exponerse desde un archivo React independiente.
+- `centroApi.js`: cliente REST contra `/api/microservicio-5` (Gateway).
+- `CentroImpresionPanel.jsx`: panel que muestra las tres etapas (Diseño → Revisión →
+  Impresión) y habilita cada botón solo cuando el semáforo de turno lo permite.
+
+El panel reutiliza las clases visuales existentes y se expone en la pestaña del
+ejercicio 5 (índice `exercise-4`) desde `App.jsx`.
