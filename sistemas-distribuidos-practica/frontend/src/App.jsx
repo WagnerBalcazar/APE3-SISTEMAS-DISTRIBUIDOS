@@ -23,6 +23,7 @@ function Exercise({ index, response, updateExercise, updateAnswer }) {
     {exercise.questions.map((question, questionIndex) => <div className="question" key={question}>
       <strong>{question}</strong><textarea placeholder="Escribe tu respuesta..." value={response.answers[questionIndex]} onChange={e => updateAnswer(index, questionIndex, e.target.value)} />
     </div>)}
+    {index === 1 && <CajeroAutomaticoSimulacion />}
     <div className="two-columns"><TextBlock label="Resultados esperados">{exercise.results}</TextBlock><TextBlock label="Criterios de verificación">{exercise.criteria}</TextBlock></div>
     <label className="field-label" htmlFor={`evidence-${index}`}>Evidencias</label>
     <textarea id={`evidence-${index}`} placeholder="Capturas, enlaces, resultados de pruebas o notas..." value={response.evidence} onChange={e => updateExercise(index, 'evidence', e.target.value)} />
@@ -83,4 +84,55 @@ export default function App() {
         {activeTab === 'evaluation' && <Evaluation data={data} updateField={updateField} />}
       </main></div><footer>Plantilla React para Sistemas Distribuidos · Los datos se guardan en este navegador.</footer>
   </>
+}
+
+// Subcomponente para la lógica del Ejercicio 2 (Cajero y Mutex)
+function CajeroAutomaticoSimulacion() {
+    const [resultado, setResultado] = useState('');
+    const [cargando, setCargando] = useState(false);
+
+    const ejecutarSimulacion = async () => {
+        setCargando(true);
+        setResultado('');
+        try {
+            // Petición a tu microservicio en Spring Boot (Puerto 3002)
+            const response = await fetch('http://localhost:3002/api/simulacion/ejecutar');
+            if (!response.ok) throw new Error('Error en el servidor');
+            
+            const data = await response.text();
+            setResultado(data);
+        } catch (error) {
+            setResultado('Error de conexión. ¿Está encendido el backend en el puerto 3002?');
+            console.error(error);
+        } finally {
+            setCargando(false);
+        }
+    };
+
+    return (
+        <div style={{ marginTop: '20px', padding: '15px', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+            <h4 style={{ margin: '0 0 10px 0', color: '#1e293b' }}>Demostración Práctica</h4>
+            <button 
+                onClick={ejecutarSimulacion} 
+                disabled={cargando}
+                style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#4C3CE6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: cargando ? 'not-allowed' : 'pointer',
+                    fontWeight: 'bold'
+                }}
+            >
+                {cargando ? 'Ejecutando procesos...' : 'Iniciar Simulación de Retiros y Depósitos'}
+            </button>
+
+            {resultado && (
+                <div style={{ marginTop: '15px', padding: '10px', backgroundColor: '#f1f5f9', borderRadius: '4px', fontFamily: 'monospace' }}>
+                    <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{resultado}</p>
+                </div>
+            )}
+        </div>
+    );
 }
