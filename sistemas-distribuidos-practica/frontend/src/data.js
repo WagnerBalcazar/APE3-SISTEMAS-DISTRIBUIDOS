@@ -1,7 +1,7 @@
 // Reemplaza los textos TODO con el contenido de tu guía de práctica.
 export const exercises = [
   {
-    title: 'Introducción a los sistemas distribuidos',
+    title: 'Control de acceso a un estacionamiento',
     objective: 'TODO: Escribe aquí el objetivo del ejercicio 1.',
     situation: 'TODO: Describe la situación problemática o caso de estudio.',
     questions: ['TODO: Pregunta de análisis 1.', 'TODO: Pregunta de análisis 2.'],

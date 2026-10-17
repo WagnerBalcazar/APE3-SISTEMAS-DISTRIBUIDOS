@@ -7,8 +7,7 @@ Monorepo académico con un frontend React, un API Gateway y cinco microservicios
 ```text
 frontend/                 Plantilla React de la práctica
 backend/gateway/          API Gateway Spring Boot
-backend/microservicio-template/  Aplicación base para los cinco servicios
-microservicios/           Documentación de los servicios
+backend/microservicios/   Cinco proyectos Spring Boot independientes
 docker-compose.yml        Orquestación de todo el sistema
 ```
 
@@ -26,7 +25,11 @@ docker-compose.yml        Orquestación de todo el sistema
 
 ```bash
 mvn -f backend/gateway/pom.xml package
-mvn -f backend/microservicio-template/pom.xml package
+mvn -f backend/microservicios/microservicio-1/pom.xml package
+mvn -f backend/microservicios/microservicio-2/pom.xml package
+mvn -f backend/microservicios/microservicio-3/pom.xml package
+mvn -f backend/microservicios/microservicio-4/pom.xml package
+mvn -f backend/microservicios/microservicio-5/pom.xml package
 ```
 
 4. Instala las dependencias del frontend y ejecútalo:
@@ -39,7 +42,7 @@ npm --prefix frontend run dev
 5. En otras terminales ejecuta el gateway y los servicios Spring Boot:
 
 ```bash
-java -jar backend/microservicio-template/target/microservicio-template-1.0.0.jar --server.port=3001 --service.number=1
+java -jar backend/microservicios/microservicio-1/target/microservicio-1-1.0.0.jar
 java -jar backend/gateway/target/gateway-1.0.0.jar
 ```
 
