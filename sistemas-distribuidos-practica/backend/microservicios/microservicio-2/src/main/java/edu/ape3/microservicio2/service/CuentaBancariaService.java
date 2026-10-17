@@ -3,7 +3,7 @@ package edu.ape3.microservicio2.service;
 import org.springframework.stereotype.Service;
 import java.util.concurrent.locks.ReentrantLock;
 
-@Service // Spring maneja esta clase como un Singleton por defecto
+@Service //
 public class CuentaBancariaService {
 
     private double saldo = 1000.0;

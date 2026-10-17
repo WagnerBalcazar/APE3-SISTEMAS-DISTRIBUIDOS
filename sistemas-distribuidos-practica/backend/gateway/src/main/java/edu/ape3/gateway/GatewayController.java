@@ -55,6 +55,26 @@ public class GatewayController {
         return forward(number, "/" + path, body, method);
     }
 
+    @RequestMapping(value = "/api/microservicio-{number}/estacionamiento/estado", method = RequestMethod.GET)
+    public ResponseEntity<String> parkingState(@PathVariable int number) {
+        return forward(number, "/api/estacionamiento/estado", null, HttpMethod.GET);
+    }
+
+    @RequestMapping(value = "/api/microservicio-{number}/estacionamiento/llegar/{id}", method = RequestMethod.POST)
+    public ResponseEntity<String> vehicleArrival(@PathVariable int number, @PathVariable int id) {
+        return forward(number, "/api/estacionamiento/llegar/" + id, null, HttpMethod.POST);
+    }
+
+    @RequestMapping(value = "/api/microservicio-{number}/estacionamiento/salir/{id}", method = RequestMethod.POST)
+    public ResponseEntity<String> vehicleExit(@PathVariable int number, @PathVariable int id) {
+        return forward(number, "/api/estacionamiento/salir/" + id, null, HttpMethod.POST);
+    }
+
+    @RequestMapping(value = "/api/microservicio-{number}/estacionamiento/reiniciar", method = RequestMethod.POST)
+    public ResponseEntity<String> resetParking(@PathVariable int number) {
+        return forward(number, "/api/estacionamiento/reiniciar", null, HttpMethod.POST);
+    }
+
     private ResponseEntity<String> forward(int number, String path, String body, HttpMethod method) {
         try {
             var request = restClient.method(method).uri(services.get(number) + path);
