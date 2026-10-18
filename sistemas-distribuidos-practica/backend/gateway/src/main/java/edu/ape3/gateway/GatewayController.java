@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClient;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @RestController
 @CrossOrigin(origins = "*")
 public class GatewayController {
@@ -48,11 +50,22 @@ public class GatewayController {
     }
 
     @RequestMapping(value = "/api/microservicio-{number}/{path:\\S+}", method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.PATCH, RequestMethod.DELETE})
-    public ResponseEntity<String> proxy(@PathVariable int number, @PathVariable String path, @RequestBody(required = false) String body, HttpMethod method) {
+    public ResponseEntity<String> proxy(@PathVariable int number, @PathVariable String path, @RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request) {
         if (!services.containsKey(number)) {
             return ResponseEntity.notFound().build();
         }
-        return forward(number, "/" + path, body, method);
+        String queryString = request.getQueryString();
+        String targetPath = "/api/" + path + (queryString != null ? "?" + queryString : "");
+        return forward(number, targetPath, body, method);
+    }
+
+    @RequestMapping(value = "/api/microservicio-3/fabrica/**", method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
+    public ResponseEntity<String> proxyFabrica(@RequestBody(required = false) String body, HttpMethod method, HttpServletRequest request) {
+        String fullPath = request.getRequestURI();
+        String targetPath = fullPath.replace("/microservicio-3", "");
+        String queryString = request.getQueryString();
+        String targetUrl = "http://microservicio-3:3003" + targetPath + (queryString != null ? "?" + queryString : "");
+        return restClient.method(method).uri(targetUrl).body(body != null ? body : "").retrieve().toEntity(String.class);
     }
 
     @RequestMapping(value = "/api/microservicio-{number}/estacionamiento/estado", method = RequestMethod.GET)
