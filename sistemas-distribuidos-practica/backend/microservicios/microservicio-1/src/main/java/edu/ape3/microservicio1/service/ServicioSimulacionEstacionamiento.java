@@ -1,5 +1,9 @@
-package edu.ape3.microservicio1;
+package edu.ape3.microservicio1.service;
 
+import edu.ape3.microservicio1.model.EstadoEstacionamiento;
+import edu.ape3.microservicio1.model.ResultadoSimulacion;
+import edu.ape3.microservicio1.model.ResultadoVehiculo;
+import edu.ape3.microservicio1.model.Vehiculo;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -20,35 +24,36 @@ public class ServicioSimulacionEstacionamiento {
     private static final long TIEMPO_ESTACIONAMIENTO_MILLIS = 200;
     private static final int CAPACIDAD_ESTACIONAMIENTO = 4;
     private final Semaphore semaforoInteractivo = new Semaphore(CAPACIDAD_ESTACIONAMIENTO, true);
-    private final Set<Integer> vehiculosDentroInteractivos = new TreeSet<>();
-    private final Set<Integer> vehiculosEsperandoInteractivos = new TreeSet<>();
+    private final Set<Vehiculo> vehiculosDentroInteractivos = new TreeSet<>();
+    private final Set<Vehiculo> vehiculosEsperandoInteractivos = new TreeSet<>();
 
     public synchronized EstadoEstacionamiento estadoEstacionamiento() {
         return crearEstado("Estado actual del estacionamiento", true);
     }
 
     public synchronized EstadoEstacionamiento llegarVehiculo(int id) {
-        if (vehiculosDentroInteractivos.contains(id)) {
+        Vehiculo vehiculo = new Vehiculo(id);
+        if (vehiculosDentroInteractivos.contains(vehiculo)) {
             return crearEstado("El vehiculo " + id + " ya esta dentro", true);
         }
-        if (vehiculosEsperandoInteractivos.contains(id)) {
+        if (vehiculosEsperandoInteractivos.contains(vehiculo)) {
             return crearEstado("El vehiculo " + id + " ya esta esperando", false);
         }
         if (semaforoInteractivo.tryAcquire()) {
-            vehiculosDentroInteractivos.add(id);
+            vehiculosDentroInteractivos.add(vehiculo);
             return crearEstado("El vehiculo " + id + " ingreso al estacionamiento", true);
         }
-        vehiculosEsperandoInteractivos.add(id);
+        vehiculosEsperandoInteractivos.add(vehiculo);
         return crearEstado("El vehiculo " + id + " quedo esperando por falta de espacio", false);
     }
 
     public synchronized EstadoEstacionamiento salirVehiculo(int id) {
-        if (!vehiculosDentroInteractivos.remove(id)) {
+        if (!vehiculosDentroInteractivos.remove(new Vehiculo(id))) {
             return crearEstado("El vehiculo " + id + " no esta dentro del estacionamiento", false);
         }
         semaforoInteractivo.release();
         if (!vehiculosEsperandoInteractivos.isEmpty()) {
-            int siguiente = vehiculosEsperandoInteractivos.iterator().next();
+            Vehiculo siguiente = vehiculosEsperandoInteractivos.iterator().next();
             vehiculosEsperandoInteractivos.remove(siguiente);
             semaforoInteractivo.acquireUninterruptibly();
             vehiculosDentroInteractivos.add(siguiente);
@@ -69,13 +74,12 @@ public class ServicioSimulacionEstacionamiento {
                 CAPACIDAD_ESTACIONAMIENTO,
                 vehiculosDentroInteractivos.size(),
                 semaforoInteractivo.availablePermits(),
-                List.copyOf(vehiculosDentroInteractivos),
-                List.copyOf(vehiculosEsperandoInteractivos),
+                vehiculosDentroInteractivos.stream().map(Vehiculo::getId).toList(),
+                vehiculosEsperandoInteractivos.stream().map(Vehiculo::getId).toList(),
                 mensaje,
                 operacionExitosa);
     }
 
-    // Service Layer: encapsula la coordinacion y evita que el controlador conozca los hilos.
     public ResultadoSimulacion simular(int capacidad, int cantidadVehiculos) {
         Semaphore espacios = new Semaphore(capacidad, true);
         AtomicInteger vehiculosDentro = new AtomicInteger();
@@ -123,7 +127,7 @@ public class ServicioSimulacionEstacionamiento {
         private final List<String> eventos;
 
         private TareaVehiculo(int id, Semaphore espacios, AtomicInteger vehiculosDentro,
-                            AtomicInteger maximoDentro, List<String> eventos) {
+                AtomicInteger maximoDentro, List<String> eventos) {
             this.id = id;
             this.espacios = espacios;
             this.vehiculosDentro = vehiculosDentro;
@@ -151,25 +155,4 @@ public class ServicioSimulacionEstacionamiento {
             }
         }
     }
-
-    public record ResultadoVehiculo(int id, long milisegundosEsperados, boolean completado) { }
-
-    public record ResultadoSimulacion(
-            int capacidad,
-            int totalVehiculos,
-            int maximoVehiculosDentro,
-            int vehiculosQueEsperaron,
-            int permisosDisponiblesAlFinal,
-            List<ResultadoVehiculo> vehiculos,
-            List<String> eventos,
-            Map<String, String> analisis) { }
-
-    public record EstadoEstacionamiento(
-            int capacidad,
-            int espaciosOcupados,
-            int espaciosDisponibles,
-            List<Integer> vehiculosDentro,
-            List<Integer> vehiculosEsperando,
-            String mensaje,
-            boolean operacionExitosa) { }
 }
