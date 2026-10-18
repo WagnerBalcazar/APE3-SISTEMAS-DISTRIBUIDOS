@@ -41,8 +41,8 @@ export default function CajeroAutomaticoPanel() {
                 <p style={{ margin: '0 0 10px 0', color: '#475569' }}><strong>Saldo inicial:</strong> $1000</p>
                 <ul style={{ margin: '0 0 10px 20px', color: '#475569', lineHeight: '1.5' }}>
                     <li><strong>Hilo 1:</strong> Intenta retirar $500</li>
-                    <li><strong>Hilo 2:</strong> Intenta depositar $200</li>
-                    <li><strong>Hilo 3:</strong> Intenta retirar $50</li>
+                    <li><strong>Hilo 2:</strong> Intenta retirar $250</li>
+                    <li><strong>Hilo 3:</strong> Intenta depositar $200</li>
                 </ul>
                 <p style={{ margin: 0, color: '#0f172a', fontWeight: '500' }}>
                     ▶ Saldo final esperado tras la sincronización: <strong>$650</strong>
