@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
-import { emptyState, exercises } from './data'
-import Exercise from './components/Exercise'
+import { emptyState } from './data'
 import MicroservicesPanel from './components/MicroservicesPanel'
 import EstacionamientoPanel from './microservicios/microservicio-1/EstacionamientoPanel'
 import CajeroAutomaticoPanel from './microservicios/microservicio-2/CajeroAutomaticoPanel'
@@ -67,16 +66,6 @@ export default function App() {
     })
     .catch(loadParkingState)
 
-  const updateExercise = (index, field, value) => setData(current => ({
-    ...current,
-    exercises: current.exercises.map((item, i) => i === index ? { ...item, [field]: value } : item)
-  }))
-  const updateAnswer = (exerciseIndex, answerIndex, value) => setData(current => ({
-    ...current,
-    exercises: current.exercises.map((item, i) => i === exerciseIndex
-      ? { ...item, answers: item.answers.map((answer, j) => j === answerIndex ? value : answer) }
-      : item)
-  }))
   return (
     <>
       <header className="hero">
@@ -89,26 +78,14 @@ export default function App() {
         </div>
       </header>
       <div className="container layout">
-        <nav className="sidebar">
-          {exercises.map((exercise, index) => (
-            <button
-              key={exercise.title}
-              className={`tab ${activeTab === `exercise-${index}` ? 'active' : ''}`}
-              onClick={() => setActiveTab(`exercise-${index}`)}
-            >
-              Ejercicio {index + 1}
-            </button>
-          ))}
-        </nav>
         <main className="main-column">
           {activeTab === 'exercise-0' && <EstacionamientoPanel simulation={parkingSimulation} state={parkingState} nextVehicle={nextVehicle} onSimulate={loadParkingSimulation} onArrive={arriveVehicle} onLeave={leaveVehicle} onReset={resetParking} />}
           {activeTab === 'exercise-1' && <CajeroAutomaticoPanel />}
           {activeTab === 'exercise-2' && <FabricaPanel />}
           {activeTab === 'exercise-3' && <PuentePanel />}
           {activeTab === 'exercise-4' && <CentroImpresionPanel />}
-          {activeTab.startsWith('exercise-') && !['exercise-0', 'exercise-1', 'exercise-2', 'exercise-3', 'exercise-4'].includes(activeTab) && <Exercise index={Number(activeTab.split('-')[1])} response={data.exercises[Number(activeTab.split('-')[1])]} updateExercise={updateExercise} updateAnswer={updateAnswer} />}
         </main>
-        <MicroservicesPanel serviceHealth={serviceHealth} checkService={checkService} />
+        <MicroservicesPanel serviceHealth={serviceHealth} checkService={checkService} onSelectService={number => setActiveTab(`exercise-${number - 1}`)} />
       </div>
       <footer>Panel de Sistemas Distribuidos</footer>
     </>
