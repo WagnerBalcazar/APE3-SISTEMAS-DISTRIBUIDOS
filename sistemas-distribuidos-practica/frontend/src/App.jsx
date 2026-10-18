@@ -7,6 +7,8 @@ import MicroservicesPanel from './components/MicroservicesPanel'
 import EstacionamientoPanel from './microservicios/microservicio-1/EstacionamientoPanel'
 import CajeroAutomaticoPanel from './microservicios/microservicio-2/CajeroAutomaticoPanel'
 import FabricaPanel from './microservicios/microservicio-3/FabricaPanel'
+import PuentePanel from './microservicios/microservicio-4/PuentePanel'
+import CentroImpresionPanel from './microservicios/microservicio-5/CentroImpresionPanel'
 import { microserviciosApi } from './services/microserviciosApi'
 
 const storageKey = 'sistemas-distribuidos-practica'
@@ -138,7 +140,9 @@ export default function App() {
           {activeTab === 'exercise-0' && <EstacionamientoPanel simulation={parkingSimulation} state={parkingState} nextVehicle={nextVehicle} onSimulate={loadParkingSimulation} onArrive={arriveVehicle} onLeave={leaveVehicle} onReset={resetParking} />}
           {activeTab === 'exercise-1' && <CajeroAutomaticoPanel />}
           {activeTab === 'exercise-2' && <FabricaPanel />}
-          {activeTab.startsWith('exercise-') && !['exercise-0', 'exercise-1', 'exercise-2'].includes(activeTab) && <Exercise index={Number(activeTab.split('-')[1])} response={data.exercises[Number(activeTab.split('-')[1])]} updateExercise={updateExercise} updateAnswer={updateAnswer} />}
+          {activeTab === 'exercise-3' && <PuentePanel />}
+          {activeTab === 'exercise-4' && <CentroImpresionPanel />}
+          {activeTab.startsWith('exercise-') && !['exercise-0', 'exercise-1', 'exercise-2', 'exercise-3', 'exercise-4'].includes(activeTab) && <Exercise index={Number(activeTab.split('-')[1])} response={data.exercises[Number(activeTab.split('-')[1])]} updateExercise={updateExercise} updateAnswer={updateAnswer} />}
           {activeTab === 'control' && <Control answers={data.control} updateControl={updateControl} />}
           {activeTab === 'evaluation' && <Evaluation data={data} updateField={updateField} />}
         </main>
