@@ -1,7 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { emptyState, exercises } from './data'
-import Control from './components/Control'
-import Evaluation from './components/Evaluation'
 import Exercise from './components/Exercise'
 import MicroservicesPanel from './components/MicroservicesPanel'
 import EstacionamientoPanel from './microservicios/microservicio-1/EstacionamientoPanel'
@@ -22,7 +20,6 @@ export default function App() {
       return emptyState
     }
   })
-  const [saved, setSaved] = useState(false)
   const [serviceHealth, setServiceHealth] = useState({})
   const [parkingSimulation, setParkingSimulation] = useState(null)
   const [parkingState, setParkingState] = useState(null)
@@ -30,9 +27,6 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem(storageKey, JSON.stringify(data))
-    setSaved(true)
-    const timer = setTimeout(() => setSaved(false), 1600)
-    return () => clearTimeout(timer)
   }, [data])
 
   const checkService = number => microserviciosApi.health(number)
@@ -73,7 +67,6 @@ export default function App() {
     })
     .catch(loadParkingState)
 
-  const updateField = (field, value) => setData(current => ({ ...current, [field]: value }))
   const updateExercise = (index, field, value) => setData(current => ({
     ...current,
     exercises: current.exercises.map((item, i) => i === index ? { ...item, [field]: value } : item)
@@ -84,20 +77,6 @@ export default function App() {
       ? { ...item, answers: item.answers.map((answer, j) => j === answerIndex ? value : answer) }
       : item)
   }))
-  const updateControl = (index, value) => setData(current => ({
-    ...current,
-    control: current.control.map((answer, i) => i === index ? value : answer)
-  }))
-  const progress = useMemo(() => {
-    const values = [
-      ...data.exercises.flatMap(e => [e.code, ...e.answers, e.evidence]),
-      ...data.control,
-      data.bibliography,
-      data.annexes
-    ]
-    return Math.round(values.filter(value => value.trim()).length / values.length * 100)
-  }, [data])
-
   return (
     <>
       <header className="hero">
@@ -120,26 +99,14 @@ export default function App() {
               Ejercicio {index + 1}
             </button>
           ))}
-          <button className={`tab ${activeTab === 'control' ? 'active' : ''}`} onClick={() => setActiveTab('control')}>Preguntas de control</button>
-          <button className={`tab ${activeTab === 'evaluation' ? 'active' : ''}`} onClick={() => setActiveTab('evaluation')}>Evaluación</button>
         </nav>
         <main className="main-column">
-          <div className="progress-card">
-            <div>
-              <strong>Progreso de la práctica</strong>
-              <small className="save-status">{saved ? 'Guardado automáticamente' : 'Los cambios se guardan solos'}</small>
-            </div>
-            <div className="progress-bar"><div style={{ width: `${progress}%` }} /></div>
-            <strong>{progress}%</strong>
-          </div>
           {activeTab === 'exercise-0' && <EstacionamientoPanel simulation={parkingSimulation} state={parkingState} nextVehicle={nextVehicle} onSimulate={loadParkingSimulation} onArrive={arriveVehicle} onLeave={leaveVehicle} onReset={resetParking} />}
           {activeTab === 'exercise-1' && <CajeroAutomaticoPanel />}
           {activeTab === 'exercise-2' && <FabricaPanel />}
           {activeTab === 'exercise-3' && <PuentePanel />}
           {activeTab === 'exercise-4' && <CentroImpresionPanel />}
           {activeTab.startsWith('exercise-') && !['exercise-0', 'exercise-1', 'exercise-2', 'exercise-3', 'exercise-4'].includes(activeTab) && <Exercise index={Number(activeTab.split('-')[1])} response={data.exercises[Number(activeTab.split('-')[1])]} updateExercise={updateExercise} updateAnswer={updateAnswer} />}
-          {activeTab === 'control' && <Control answers={data.control} updateControl={updateControl} />}
-          {activeTab === 'evaluation' && <Evaluation data={data} updateField={updateField} />}
         </main>
         <MicroservicesPanel serviceHealth={serviceHealth} checkService={checkService} />
       </div>
