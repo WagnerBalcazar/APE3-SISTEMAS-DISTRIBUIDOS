@@ -69,13 +69,18 @@ public class GatewayController {
         String fullPath = request.getRequestURI();
         String targetPath = fullPath.replace("/microservicio-3", "");
         String queryString = request.getQueryString();
-        String targetUrl = "http://microservicio-3:3003" + targetPath + (queryString != null ? "?" + queryString : "");
+        String targetUrl = services.get(3) + targetPath + (queryString != null ? "?" + queryString : "");
         return restClient.method(method).uri(targetUrl).body(body != null ? body : "").retrieve().toEntity(String.class);
     }
 
     @RequestMapping(value = "/api/microservicio-{number}/estacionamiento/estado", method = RequestMethod.GET)
     public ResponseEntity<String> parkingState(@PathVariable int number) {
         return forward(number, "/api/estacionamiento/estado", null, HttpMethod.GET);
+    }
+
+    @RequestMapping(value = "/api/microservicio-2/simulacion/ejecutar", method = RequestMethod.GET)
+    public ResponseEntity<String> accountSimulation() {
+        return forward(2, "/api/simulacion/ejecutar", null, HttpMethod.GET);
     }
 
     @RequestMapping(value = "/api/microservicio-{number}/estacionamiento/llegar/{id}", method = RequestMethod.POST)

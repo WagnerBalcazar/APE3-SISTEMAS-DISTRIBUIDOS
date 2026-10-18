@@ -73,11 +73,6 @@ export default function App() {
     })
     .catch(loadParkingState)
 
-  useEffect(() => {
-    loadParkingSimulation()
-    loadParkingState()
-  }, [])
-
   const updateField = (field, value) => setData(current => ({ ...current, [field]: value }))
   const updateExercise = (index, field, value) => setData(current => ({
     ...current,
