@@ -55,7 +55,12 @@ public class GatewayController {
             return ResponseEntity.notFound().build();
         }
         String queryString = request.getQueryString();
-        String targetPath = "/api/" + path + (queryString != null ? "?" + queryString : "");
+        String targetPath = "health".equals(path)
+                ? "/health"
+                : "/api/" + path;
+        if (queryString != null) {
+            targetPath += "?" + queryString;
+        }
         return forward(number, targetPath, body, method);
     }
 

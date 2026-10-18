@@ -8,7 +8,7 @@ export default function CajeroAutomaticoPanel() {
         setCargando(true);
         setResultado('');
         try {
-            const response = await fetch('http://localhost:3002/api/simulacion/ejecutar');
+            const response = await fetch('/api/microservicio-2/simulacion/ejecutar');
             if (!response.ok) throw new Error('Error en el servidor');
             
             const data = await response.text();
